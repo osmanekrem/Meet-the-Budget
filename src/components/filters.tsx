@@ -8,6 +8,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import qs from "query-string";
 import { useVault } from '@/features/vault/hooks/use-vault';
+import { durationTypes } from '@/constants/durations';
 
 type Props = {}
 
@@ -27,25 +28,6 @@ const useDebouncedValue = (inputValue: any, delay: number = 500) => {
   
     return debouncedValue;
   };
-
-const durationTypes = [
-    {
-        text: "Day",
-        value: 1,
-    },
-    {
-        text: "Week",
-        value: 7,
-    },
-    {
-        text: "Month",
-        value: 30,
-    },
-    {
-        text: "Year",
-        value: 365,
-    },
-]
 
 export default function Filters({}: Props) {
 

@@ -19,9 +19,11 @@ import StatusBadge from "./status-badge";
 import { useSearchParams } from "next/navigation";
 import Filters from "./filters";
 import Link from "next/link";
+import { useTransfer } from "@/features/transfer/hooks/use-transfer";
 
 export default function DataGrid() {
   const { getVaults } = useVault();
+  const {transfers: transfersData} = useTransfer()
 
   const params = useSearchParams();
 
@@ -33,12 +35,14 @@ export default function DataGrid() {
     () => parseInt(params.get("durationCount") || "0", 10),
     [params]
   );
-  const vaultId = useMemo(() => params.get("vaultId"), [params]);
+  const vaultId = useMemo(() => params.get("vaultId") || "all", [params]);
 
   const vaultIdProcessed = useMemo(
     () => (vaultId && vaultId !== "all" ? [parseInt(vaultId, 10)] : "all"),
     [vaultId]
   );
+
+  const transfers = useMemo(() => vaultId === "all" ? [] : transfersData,[vaultId, transfersData])
 
   const [incomesShow, setIncomesShow] = useState(false);
   const [expensesShow, setExpensesShow] = useState(false);
@@ -46,18 +50,16 @@ export default function DataGrid() {
   const [summary, setSummary] = useState<SummaryData | undefined>();
 
   const vaults = useMemo(() => {
-    console.log("vaults getted");
     return getVaults(vaultIdProcessed);
-  }, [vaultIdProcessed]);
+  }, [vaultIdProcessed, getVaults]);
 
   useEffect(() => {
     const fetchSummary = () => {
-      console.log("summary fetched", vaults);
-      const result = getSummaryByDate(vaults, durationType * durationCount);
+      const result = getSummaryByDate(vaults, durationType * durationCount, transfers);
       setSummary(result);
     };
     fetchSummary();
-  }, [vaults, durationType, durationCount]);
+  }, [vaults, durationType, durationCount, transfers]);
 
   if (!summary) return null;
 
@@ -73,8 +75,8 @@ export default function DataGrid() {
         <DataCard title="Incomes">
           <div className="flex flex-col gap-1.5">
             <div className="flex gap-x-2 items-end justify-between border-b pb-4">
-              <span className=" text-muted-foreground">Total Incomes</span>
-              <span className="font-bold text-3xl">
+              <span className="text-sm lg:text-base text-muted-foreground">Total Incomes</span>
+              <span className="font-bold text-2xl lg:text-3xl truncate">
                 {formatCurrency(summary.totalIncome)}
               </span>
             </div>
@@ -87,7 +89,7 @@ export default function DataGrid() {
                         <span className="text-sm text-muted-foreground">
                           {income.name}
                         </span>
-                        <span className="font-bold text-xl">
+                        <span className="font-bold text-lg lg:text-xl">
                           {formatCurrency(income.totalAmount)}
                         </span>
                       </div>
@@ -138,8 +140,8 @@ export default function DataGrid() {
         <DataCard title="Expenses">
           <div className="flex flex-col gap-1.5">
             <div className="flex gap-x-2 items-end justify-between border-b pb-4">
-              <span className=" text-muted-foreground">Total Expenses</span>
-              <span className="font-bold text-3xl">
+              <span className="text-sm lg:text-base text-muted-foreground">Total Expenses</span>
+              <span className="font-bold text-2xl lg:text-3xl truncate">
                 {formatCurrency(summary.totalExpense)}
               </span>
             </div>
@@ -153,7 +155,7 @@ export default function DataGrid() {
                         <span className="text-sm text-muted-foreground">
                           {expense.name}
                         </span>
-                        <span className="font-bold text-xl">
+                        <span className="font-bold text-lg lg:text-xl">
                           {formatCurrency(expense.totalAmount)}
                         </span>
                       </div>

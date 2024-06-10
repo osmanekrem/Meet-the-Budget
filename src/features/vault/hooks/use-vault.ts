@@ -3,6 +3,7 @@ import { CreateVault, Expense, Income, Vault } from "@/types/app-types";
 import { create } from "zustand";
 import { VaultFormValues } from "../components/vault-form";
 import { persist, createJSONStorage } from 'zustand/middleware'
+import { toast } from "sonner";
 
 type VaultState = {
   vaults: Vault[];
@@ -55,7 +56,7 @@ export const useVault = create<VaultState>()(
       },
       getExpendableVaults: () => get().vaults.filter((v) => v.isExpendable),
       addVault: (vault) =>
-        set((state) => ({
+        {set((state) => ({
           vaults: [
             ...state.vaults,
             {
@@ -65,7 +66,9 @@ export const useVault = create<VaultState>()(
               expenses: [],
             },
           ],
-        })),
+        }))
+        toast.success("Vault Created!")
+      },
       editVault: (id, vault) =>
         set((state) => ({
           vaults: [

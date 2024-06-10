@@ -18,6 +18,10 @@ const routes = [
     label: "Expenses",
   },
   {
+    href: "/save/transfers",
+    label: "Transfers",
+  },
+  {
     href: "/save/vaults",
     label: "Vaults",
   },

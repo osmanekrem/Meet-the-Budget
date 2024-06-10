@@ -8,8 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useOpenIncome } from "@/features/income/hooks/use-open-income";
-import { useIncome } from "../hooks/use-income";
+import { useOpenTransfer } from "../hooks/use-open-transfer";
+import { useTransfer } from "../hooks/use-transfer";
 import { useVault } from "@/features/vault/hooks/use-vault";
 import { useConfirm } from "@/hooks/use-confirm";
 
@@ -18,23 +18,20 @@ type Props = {
 };
 
 export default function Actions({ id }: Props) {
-  const { onOpen } = useOpenIncome();
+  const { onOpen } = useOpenTransfer();
   const [ConfirmDialog, confirm] = useConfirm(
     "Are you sure?",
-    "You are about to delete this income."
+    "You are about to delete this transfer."
   );
 
-  const { removeIncomeFromVault } = useVault();
-  const { getIncome, removeIncome } = useIncome();
+  const { removeTransfer } = useTransfer();
 
-  const income = getIncome(id);
 
   const handleDelete = async () => {
     const ok = await confirm();
 
     if (ok) {
-      removeIncome(id);
-      if (income?.vaultId) removeIncomeFromVault(income.vaultId, id);
+      removeTransfer(id);
     }
   };
 

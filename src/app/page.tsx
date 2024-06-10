@@ -15,7 +15,7 @@ export default function Home() {
         className: "mt-5"
       })}>
         Start Saving
-        <ArrowRight className="ml-2 h-5 w-5" />
+        <ArrowRight className="ml-2 size-5" />
       </Link>
     </MaxWidthWrapper>
   );

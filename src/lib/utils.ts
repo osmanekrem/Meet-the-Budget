@@ -1,6 +1,5 @@
 import { Frequency } from "@/types/app-types";
 import { type ClassValue, clsx } from "clsx";
-import { useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -18,7 +17,8 @@ export function convertMiliUnitstoAmount(miliunits: number) {
 export function formatCurrency(value: number) {
   return Intl.NumberFormat("de-DE", {
     minimumFractionDigits: 2,
-  }).format(value);
+    maximumFractionDigits: 2
+  }).format(value); 
 }
 
 export function formatPercentage(value:number) {

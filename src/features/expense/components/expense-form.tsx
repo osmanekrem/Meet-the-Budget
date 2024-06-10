@@ -27,6 +27,8 @@ import { Expense, Frequency } from "@/types/app-types";
 import { convertAmountToMiliUnits } from "@/lib/utils";
 import { useVault } from "@/features/vault/hooks/use-vault";
 import ChangeInput from "@/components/change-input";
+import { durationTypes } from "@/constants/durations";
+import { useState } from "react";
 
 export const ExpenseFormSchema = z
   .object({
@@ -58,6 +60,16 @@ export type ExpenseFormValues = z.infer<typeof ExpenseFormSchema>;
 type Props = {
   id?: number;
   defaultValues?: ExpenseFormValues;
+  values?: {
+    startDay: {
+      count: number
+      type: number
+    }
+    duration: {
+      count: number
+      type: number
+    }
+  }
   onSubmit: (values: Expense) => void;
   onDelete?: () => void;
   disabled?: boolean;
@@ -66,6 +78,7 @@ type Props = {
 export default function ExpenseForm({
   id,
   defaultValues,
+  values,
   onSubmit,
   onDelete,
   disabled,
@@ -76,6 +89,11 @@ export default function ExpenseForm({
   });
 
   const {getVault, getExpendableVaults} = useVault()
+
+  const [startDurationType, setStartDurationType] = useState(values?.startDay.type ?? 1);
+  const [startDurationCount, setStartDurationCount] = useState(values?.startDay.count ?? 0);
+  const [durationType, setDurationType] = useState(values?.duration.type ?? 1);
+  const [durationCount, setDurationCount] = useState(values?.duration.count ?? 0);
 
   const expendableVaults = getExpendableVaults()
 
@@ -92,6 +110,8 @@ export default function ExpenseForm({
       name: values.name,
       frequency: values.frequency,
       vault: getVault(values.vaultId) ?? expendableVaults[0],
+      startDay: {type: startDurationType, count: startDurationCount},
+      duration: {type: durationType, count: durationCount},
       amount: controlledAmount,
       ...(values.frequencyOfChange === Frequency.NEVER
         ? {
@@ -188,6 +208,89 @@ export default function ExpenseForm({
             </FormItem>
           )}
         />
+        <div className="flex flex-col gap-y-4 items-start">
+          <FormLabel>Start After</FormLabel>
+          <div className="flex w-full gap-x-4 items-center">
+            <Button
+            
+            className="!w-32 shrink-0"
+            variant={"outline"}
+              type="button"
+              onClick={() => {
+                setStartDurationCount(0);
+                setStartDurationType(1);
+              }}
+            >
+              Now (0 days)
+            </Button>
+            <Input
+              value={startDurationCount}
+              type="number"
+              pattern="[0-9]"
+              min={0}
+              onChange={(e) => setStartDurationCount(+e.target.value)}
+            />
+            <Select
+              onValueChange={(e) => setStartDurationType(+e)}
+              value={startDurationType.toString()}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Duration" />
+              </SelectTrigger>
+              <SelectContent>
+                {durationTypes.map((duration) => (
+                  <SelectItem
+                    key={duration.value}
+                    value={duration.value.toString()}
+                  >
+                    {duration.text}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex flex-col gap-y-4 items-start">
+          <FormLabel>Duration</FormLabel>
+          <div className="flex w-full gap-x-4 items-center">
+            <Button
+            className="!w-32 shrink-0"
+            variant={"outline"}
+              type="button"
+              onClick={() => {
+                setDurationCount(0);
+                setDurationType(1);
+              }}
+            >
+              Endless (0 days)
+            </Button>
+            <Input
+              value={durationCount}
+              type="number"
+              pattern="[0-9]"
+              min={0}
+              onChange={(e) => setDurationCount(+e.target.value)}
+            />
+            <Select
+              onValueChange={(e) => setDurationType(+e)}
+              value={durationType.toString()}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Duration" />
+              </SelectTrigger>
+              <SelectContent>
+                {durationTypes.map((duration) => (
+                  <SelectItem
+                    key={duration.value}
+                    value={duration.value.toString()}
+                  >
+                    {duration.text}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         <FormField
           control={form.control}
           name="frequencyOfChange"

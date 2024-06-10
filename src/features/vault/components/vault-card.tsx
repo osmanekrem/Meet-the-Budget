@@ -14,10 +14,12 @@ import { useCreateVault } from "@/features/vault/hooks/use-create-vault";
 import { useVault } from "@/features/vault/hooks/use-vault";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
+import { useTransfer } from "@/features/transfer/hooks/use-transfer";
 
 export default function VaultCard() {
   const { onOpen } = useCreateVault();
   const { vaults, removeVaults } = useVault();
+  const {removeTransfers, transfers} = useTransfer()
 
   return (
     <Card className="text-start overflow-hidden">
@@ -40,6 +42,8 @@ export default function VaultCard() {
           data={vaults}
           onDelete={(row) => {
             const ids = row.map((r) => r.original.id);
+            const transferIdsToRemove = transfers.filter(t => ids.includes(t.from.id) || ids.includes(t.to.id)).map(t => t.id)
+            removeTransfers(transferIdsToRemove)
             removeVaults(ids);
           }}
         />

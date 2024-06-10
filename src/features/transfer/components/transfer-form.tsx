@@ -5,42 +5,54 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { Input } from "@/components/ui/input";
-import { Select } from "@radix-ui/react-select";
-import { Button } from "../../../components/ui/button";
+import CreateableSelect from "@/components/select";
+import { Button } from "@/components/ui/button";
 
 import { TrashIcon } from "lucide-react";
 
 import {
+  Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
+} from "@/components/ui/select";
 
-import { Form, FormField, FormItem, FormLabel } from "../../../components/ui/form";
+import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
 
 import { frequencies } from "@/constants/frequencies";
-import CurrencyInput from "../../../components/currency-input";
-import { Frequency, Income } from "@/types/app-types";
+import CurrencyInput from "@/components/currency-input";
+import { CreateTransfer, Frequency, Income, Transfer } from "@/types/app-types";
 import { convertAmountToMiliUnits } from "@/lib/utils";
 import { useVault } from "@/features/vault/hooks/use-vault";
 import ChangeInput from "@/components/change-input";
 import { useState } from "react";
 import { durationTypes } from "@/constants/durations";
 
-export const IncomeFormSchema = z
+export const TransferFormSchema = z
   .object({
     name: z.string().min(2),
     frequency: z.nativeEnum(Frequency),
     amount: z.string(),
-    vaultId: z.number(),
+    fromVaultId: z.number(),
+    toVaultId: z.number(),
     frequencyOfChange: z.nativeEnum(Frequency),
     amountOfChange: z.string().optional(),
-    isPercentageChange: z.boolean().optional()
+    isPercentageChange: z.boolean().optional(),
   })
   .refine((data) => {
-    if (data.frequencyOfChange !== Frequency.NEVER && !data.amountOfChange && data.isPercentageChange === undefined)
+    if (
+      data.frequencyOfChange !== Frequency.NEVER &&
+      !data.amountOfChange &&
+      data.isPercentageChange === undefined
+    )
       return false;
+
+    if (data.fromVaultId === data.toVaultId) return false;
+
+    if (!data.toVaultId) return false;
+
+    if (!data.fromVaultId) return false;
 
     if (
       !data.frequencyOfChange ||
@@ -53,11 +65,11 @@ export const IncomeFormSchema = z
     return true;
   });
 
-export type IncomeFormValues = z.infer<typeof IncomeFormSchema>;
+export type TransferFormValues = z.infer<typeof TransferFormSchema>;
 
 type Props = {
   id?: number;
-  defaultValues?: IncomeFormValues;
+  defaultValues?: TransferFormValues;
   values?: {
     startDay: {
       count: number
@@ -68,7 +80,7 @@ type Props = {
       type: number
     }
   }
-  onSubmit: (values: Income) => void;
+  onSubmit: (values: CreateTransfer) => void;
   onDelete?: () => void;
   disabled?: boolean;
 };
@@ -76,36 +88,51 @@ type Props = {
 export default function IncomeForm({
   id,
   defaultValues,
+  values,
   onSubmit,
   onDelete,
-  values,
   disabled,
 }: Props) {
-  const form = useForm<IncomeFormValues>({
-    resolver: zodResolver(IncomeFormSchema),
+  const form = useForm<TransferFormValues>({
+    resolver: zodResolver(TransferFormSchema),
     defaultValues: defaultValues,
   });
 
-  const {getVault, vaults} = useVault()
+  const { getVault, vaults, getExpendableVaults, addVault } = useVault();
 
   const [startDurationType, setStartDurationType] = useState(values?.startDay.type ?? 1);
   const [startDurationCount, setStartDurationCount] = useState(values?.startDay.count ?? 0);
   const [durationType, setDurationType] = useState(values?.duration.type ?? 1);
   const [durationCount, setDurationCount] = useState(values?.duration.count ?? 0);
 
-  const handleSubmit = (values: IncomeFormValues) => {
+  const expendableVaults = getExpendableVaults();
+
+  const onCreateVault = (name: string) => {
+    addVault({
+      name,
+      initialMoney: 0,
+      isExpendable: false,
+    });
+  };
+
+  const handleSubmit = (values: TransferFormValues) => {
     const controlledAmountOfChange =
       values.frequencyOfChange !== Frequency.NEVER
-        ? !!values.isPercentageChange ? parseFloat(values.amountOfChange as string) : convertAmountToMiliUnits(parseFloat(values.amountOfChange as string))
+        ? !!values.isPercentageChange
+          ? parseFloat(values.amountOfChange as string)
+          : convertAmountToMiliUnits(
+              parseFloat(values.amountOfChange as string)
+            )
         : undefined;
     const controlledAmount = convertAmountToMiliUnits(
       parseFloat(values.amount)
     );
 
-    const data: Income = {
+    const data: CreateTransfer = {
       name: values.name,
       frequency: values.frequency,
-      vault: getVault(values.vaultId) ?? vaults[0],
+      from: getVault(values.fromVaultId) ?? vaults[0],
+      to: getVault(values.toVaultId) ?? vaults[1],
       startDay: {type: startDurationType, count: startDurationCount},
       duration: {type: durationType, count: durationCount},
       amount: controlledAmount,
@@ -116,7 +143,7 @@ export default function IncomeForm({
         : {
             frequencyOfChange: values.frequencyOfChange,
             amountOfChange: controlledAmountOfChange as number,
-            isPercentageChange: values.isPercentageChange as boolean
+            isPercentageChange: values.isPercentageChange as boolean,
           }),
     };
 
@@ -181,10 +208,10 @@ export default function IncomeForm({
         />
         <FormField
           control={form.control}
-          name="vaultId"
+          name="fromVaultId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Vault</FormLabel>
+              <FormLabel>From</FormLabel>
               <Select
                 onValueChange={(value) => field.onChange(+value)}
                 defaultValue={field.value.toString() ?? "1"}
@@ -194,13 +221,32 @@ export default function IncomeForm({
                   <SelectValue placeholder="Vault" />
                 </SelectTrigger>
                 <SelectContent>
-                  {vaults.map((vault) => (
+                  {expendableVaults.map((vault) => (
                     <SelectItem key={vault.id} value={vault.id.toString()}>
                       {vault.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="toVaultId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>To</FormLabel>
+              <CreateableSelect
+                placeholder="Select an Vault"
+                options={vaults.map((vault) => ({
+                  label: vault.name,
+                  value: vault.id.toString(),
+                }))}
+                onCreate={onCreateVault}
+                value={field.value.toString()}
+                onChange={(value) => field.onChange(!!value ? +value : value)}
+              />
             </FormItem>
           )}
         />
@@ -307,7 +353,9 @@ export default function IncomeForm({
                       text: "Never",
                       value: Frequency.NEVER,
                     },
-                    ...frequencies.filter(f => f.value !== Frequency.ONE_TIME),
+                    ...frequencies.filter(
+                      (f) => f.value !== Frequency.ONE_TIME
+                    ),
                   ].map((frequency) => (
                     <SelectItem key={frequency.value} value={frequency.value}>
                       {frequency.text}
@@ -318,24 +366,28 @@ export default function IncomeForm({
             </FormItem>
           )}
         />
-        {form.getValues().frequencyOfChange !== Frequency.NEVER && <FormField
-          control={form.control}
-          name="amountOfChange"
-          disabled={form.getValues().frequencyOfChange === Frequency.NEVER}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Amount of Change</FormLabel>
-              <ChangeInput
-                isPercentageChange={form.watch("isPercentageChange") ?? false}
-                setIsPerecentageChange={(value: any) => form.setValue("isPercentageChange", value)}
-                disabled={disabled || field.disabled}
-                placeholder="0.00"
-                value={field.value || ""}
-                onChange={field.onChange}
-              />
-            </FormItem>
-          )}
-        />}
+        {form.getValues().frequencyOfChange !== Frequency.NEVER && (
+          <FormField
+            control={form.control}
+            name="amountOfChange"
+            disabled={form.getValues().frequencyOfChange === Frequency.NEVER}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Amount of Change</FormLabel>
+                <ChangeInput
+                  isPercentageChange={form.watch("isPercentageChange") ?? false}
+                  setIsPerecentageChange={(value: any) =>
+                    form.setValue("isPercentageChange", value)
+                  }
+                  disabled={disabled || field.disabled}
+                  placeholder="0.00"
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                />
+              </FormItem>
+            )}
+          />
+        )}
         <Button
           className="w-full"
           disabled={
@@ -345,7 +397,7 @@ export default function IncomeForm({
             disabled
           }
         >
-          {id ? "Save Changes" : "Add Income"}
+          {id ? "Save Changes" : "Add Transfer"}
         </Button>
         {!!id && (
           <Button

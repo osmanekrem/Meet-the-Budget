@@ -1,5 +1,5 @@
 import { convertMiliUnitstoAmount, getDaysOfFrequency } from "@/lib/utils";
-import { Expense, Frequency, Income, Vault } from "@/types/app-types";
+import { Expense, Frequency, Income, Transfer, Vault } from "@/types/app-types";
 
 type Data = {
   amount: number;
@@ -16,7 +16,7 @@ export type SummaryData = {
   initialRemaining: number;
 };
 
-export function getSummaryByDate(vaults: Vault[], daysCount: number) {
+export function getSummaryByDate(vaults: Vault[], daysCount: number, transfers: Transfer[]) {
 
   let data: SummaryData = {
     incomeList: [],
@@ -31,6 +31,10 @@ export function getSummaryByDate(vaults: Vault[], daysCount: number) {
     data.incomeList.push(...getDataList(vault.incomes, daysCount));
     data.expenseList.push(...getDataList(vault.expenses, daysCount));
     data.initialRemaining += vault.initialMoney;
+    if(vaults.length === 1) {
+      data.incomeList.push(...getDataList(transfers.filter(t => t.to.id === vault.id), daysCount))
+      data.expenseList.push(...getDataList(transfers.filter(t => t.from.id === vault.id), daysCount))
+    }
   });
 
   data.totalIncome = data.incomeList
@@ -43,19 +47,32 @@ export function getSummaryByDate(vaults: Vault[], daysCount: number) {
   return data;
 }
 
-const getDataList = (datas: Income[] | Expense[], daysCount: number) => {
+const getDataList = (datas: Income[] | Expense[] | Transfer[], daysCount: number) => {
   return datas.map((data) => {
     const frequencyDays = getDaysOfFrequency(data.frequency);
     const changeFrequencyDays = getDaysOfFrequency(data.frequencyOfChange);
     const startAmount = convertMiliUnitstoAmount(data.amount);
+
+    const duration = (data as Transfer).duration
+    const startDay = (data as Transfer).startDay
 
     let values: Data[] = [];
     for (let i = frequencyDays; i <= daysCount; i += frequencyDays) {
       const changeCount = Math.floor(
         (i-frequencyDays) / changeFrequencyDays
       );
-
       
+
+      if(!!startDay){
+        if(startDay.count*startDay.type >= i) {
+          continue
+        }
+      }
+      if(!!duration && ((duration.count*duration.type) > 0)){
+        if((duration.count*duration.type)+(startDay.count*startDay.type) < i) {
+          continue
+        }
+      }
 
       let finalAmount = startAmount;
       if (data.frequencyOfChange !== Frequency.NEVER) {
@@ -68,6 +85,8 @@ const getDataList = (datas: Income[] | Expense[], daysCount: number) => {
         }
       }
       let increase = data.isPercentageChange ? (finalAmount/startAmount)*100-100 : finalAmount - startAmount;
+
+      
 
       values.push({
         amount: finalAmount,

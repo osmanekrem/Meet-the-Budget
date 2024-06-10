@@ -7,6 +7,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 type IncomeState = {
   incomes: ({ id: number } & Income)[];
   getIncome: (id?: number) => IncomeFormValues | undefined;
+  getIncomeWithValues: (id?: number) => Income | undefined;
   addIncome: (income: Income) => Income & { id: number };
   editIncome: (id: number, income: Income) => void;
   removeIncome: (id: number) => void;
@@ -41,6 +42,9 @@ export const useIncome = create<IncomeState>()(
             }
           : undefined;
       },
+      getIncomeWithValues:(id)=> {
+        return get().incomes.find(income => income.id === id)
+    },
       addIncome: (income) => {
         const data = { ...income, id: get().incomes.length + 1 };
         set((state) => ({

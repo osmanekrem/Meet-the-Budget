@@ -16,7 +16,7 @@ export default function EditIncomeSheet() {
   const { id, isOpen, onClose } = useOpenIncome();
 
   const { removeIncomeFromVault, editIncomeInVault } = useVault();
-  const { getIncome, editIncome, removeIncome } = useIncome();
+  const { getIncome, getIncomeWithValues, editIncome, removeIncome } = useIncome();
 
   const [ConfirmDialog, confirm] = useConfirm(
     "Are you sure?",
@@ -26,6 +26,7 @@ export default function EditIncomeSheet() {
   if (!id) return null;
 
   const income = getIncome(id);
+  const incomeWithValues = getIncomeWithValues(id);
 
   const defaultValues: IncomeFormValues = !!income
     ? income
@@ -67,6 +68,10 @@ export default function EditIncomeSheet() {
             onSubmit={handleSubmit}
             onDelete={handleDelete}
             defaultValues={defaultValues}
+            values={!!incomeWithValues?.startDay && !!incomeWithValues?.duration ? {
+              startDay: incomeWithValues.startDay,
+              duration: incomeWithValues.duration
+            } : undefined}
           />
         </SheetContent>
       </Sheet>

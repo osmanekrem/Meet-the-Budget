@@ -7,6 +7,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 type ExpenseState = {
   expenses: ({ id: number } & Income)[];
   getExpense: (id?: number) => ExpenseFormValues | undefined;
+  getExpenseWithValues: (id?: number) => Expense | undefined;
   addExpense: (expense: Expense) => Expense & { id: number };
   editExpense: (id: number, expense: Expense) => void;
   removeExpense: (id: number) => void;
@@ -36,10 +37,15 @@ export const useExpense = create<ExpenseState>()(
                       : convertMiliUnitstoAmount(
                           expense.amountOfChange
                         ).toString(),
+                        
+                    isPercentageChange: expense.isPercentageChange,
                   }),
             }
           : undefined;
       },
+      getExpenseWithValues:(id)=> {
+        return get().expenses.find(expense => expense.id === id)
+    },
       addExpense: (expense) => {
         const data = { ...expense, id: get().expenses.length + 1 };
         set((state) => ({

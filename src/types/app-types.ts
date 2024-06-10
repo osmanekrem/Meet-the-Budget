@@ -16,6 +16,14 @@ export type Income = {
     name: string
     frequency: Frequency
     amount: number
+    startDay: {
+        count: number
+        type: number
+    }
+    duration: {
+        count: number
+        type: number
+    }
     vault: Vault
 } & (
     {
@@ -33,6 +41,14 @@ export type Expense = {
     name: string
     frequency: Frequency
     amount: number
+    startDay: {
+        count: number
+        type: number
+    }
+    duration: {
+        count: number
+        type: number
+    }
     vault: Vault
 } & (
     {
@@ -60,3 +76,55 @@ export type Vault = {
     incomes: ({id: number} & Income)[]
     expenses: ({id: number} & Expense)[]
 }
+
+export type CreateTransfer = {
+    name: string
+    from: Vault
+    to: Vault
+    startDay: {
+        count: number
+        type: number
+    }
+    duration: {
+        count: number
+        type: number
+    }
+    amount: number
+    frequency: Frequency
+} & (
+    {
+        frequencyOfChange: Frequency.NEVER
+        amountOfChange?: undefined
+        isPercentageChange?: undefined
+    } | {
+        frequencyOfChange: Exclude<Frequency, Frequency.NEVER>
+        amountOfChange: number
+        isPercentageChange: boolean
+    }
+)
+export type Transfer = {
+    id: number
+    name: string
+    from: Vault
+    to: Vault
+    startDay: {
+        count: number
+        type: number
+    }
+    duration: {
+        count: number
+        type: number
+    }
+    amount: number
+    frequency: Frequency
+} & (
+    {
+        frequencyOfChange: Frequency.NEVER
+        amountOfChange?: undefined
+        isPercentageChange?: undefined
+    } | {
+        frequencyOfChange: Exclude<Frequency, Frequency.NEVER>
+        amountOfChange: number
+        isPercentageChange: boolean
+    }
+)
