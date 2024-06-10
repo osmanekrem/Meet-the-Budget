@@ -1,6 +1,10 @@
 import DataGrid from "@/components/data-grid";
 import React from "react";
-
+import { Suspense } from "react";
 export default function SummaryPage() {
-  return <DataGrid />;
+  return (
+    <Suspense>
+      <DataGrid />;
+    </Suspense>
+  );
 }
