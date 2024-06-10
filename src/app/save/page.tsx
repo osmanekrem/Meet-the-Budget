@@ -4,7 +4,7 @@ import { Suspense } from "react";
 export default function SummaryPage() {
   return (
     <Suspense>
-      <DataGrid />;
+      <DataGrid />
     </Suspense>
   );
 }
