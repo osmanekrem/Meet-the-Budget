@@ -57,10 +57,18 @@ const getDataList = (datas: Income[] | Expense[] | Transfer[], daysCount: number
     const startDay = (data as Transfer).startDay
 
     let values: Data[] = [];
-    for (let i = frequencyDays; i <= daysCount; i += frequencyDays) {
+    for (let i = Math.max(frequencyDays,0); i <= daysCount; i += (frequencyDays === -1 ? 1 : frequencyDays)) {
       const changeCount = Math.floor(
         (i-frequencyDays) / changeFrequencyDays
       );
+
+      console.log(i, frequencyDays);
+      
+
+      if((frequencyDays === -1 && (startDay.count*startDay.type) > i)){
+        continue
+      }
+      
       
 
       if(!!startDay){
@@ -91,8 +99,12 @@ const getDataList = (datas: Income[] | Expense[] | Transfer[], daysCount: number
       values.push({
         amount: finalAmount,
         increase,
-        afterDays: i/frequencyDays,
+        afterDays: i/Math.max(frequencyDays,1),
       });
+
+      if((frequencyDays === -1 && (startDay.count*startDay.type) < i)){
+        break
+      }
     }
     const totalAmount = values.reduce((total, value) => total + value.amount, 0);
 

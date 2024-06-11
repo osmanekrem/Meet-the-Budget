@@ -32,6 +32,7 @@ export function formatPercentage(value:number) {
 
 export function getDaysOfFrequency(frequency: Frequency) {
   switch (frequency) {
+    case Frequency.ONE_TIME: return -1
     case Frequency.DAILY: return 1
     case Frequency.WEEKLY: return 7
     case Frequency.BIWEEKLY: return 14
