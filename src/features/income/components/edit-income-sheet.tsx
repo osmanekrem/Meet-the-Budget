@@ -68,7 +68,7 @@ export default function EditIncomeSheet() {
             onSubmit={handleSubmit}
             onDelete={handleDelete}
             defaultValues={defaultValues}
-            values={!!incomeWithValues?.startDay && !!incomeWithValues?.duration ? {
+            values={!!incomeWithValues?.startDay || !!incomeWithValues?.duration ? {
               startDay: incomeWithValues.startDay,
               duration: incomeWithValues.duration
             } : undefined}

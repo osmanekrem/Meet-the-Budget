@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 
 import { Input } from "@/components/ui/input";
 import { Select } from "@radix-ui/react-select";
-import { Button } from "../../../components/ui/button";
+import { Button } from "@/components/ui/button";
 
 import { TrashIcon } from "lucide-react";
 
@@ -15,12 +15,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
+} from "@/components/ui/select";
 
-import { Form, FormField, FormItem, FormLabel } from "../../../components/ui/form";
+import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
 
 import { frequencies } from "@/constants/frequencies";
-import CurrencyInput from "../../../components/currency-input";
+import CurrencyInput from "@/components/currency-input";
 import { Frequency, Income } from "@/types/app-types";
 import { convertAmountToMiliUnits } from "@/lib/utils";
 import { useVault } from "@/features/vault/hooks/use-vault";
