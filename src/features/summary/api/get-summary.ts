@@ -53,23 +53,21 @@ const getDataList = (datas: Income[] | Expense[] | Transfer[], daysCount: number
     const changeFrequencyDays = getDaysOfFrequency(data.frequencyOfChange);
     const startAmount = convertMiliUnitstoAmount(data.amount);
 
-    const duration = (data as Transfer).duration
-    const startDay = (data as Transfer).startDay
+    const duration = data.duration
+    const startDay = data.startDay
 
     let values: Data[] = [];
     for (let i = Math.max(frequencyDays,0); i <= daysCount; i += (frequencyDays === -1 ? 1 : frequencyDays)) {
       const changeCount = Math.floor(
-        (i-frequencyDays) / changeFrequencyDays
+        (i-frequencyDays-(startDay.count*startDay.type)) / changeFrequencyDays
       );
 
-      console.log(i, frequencyDays);
+      console.log(i, frequencyDays, (startDay.count*startDay.type));
       
 
       if((frequencyDays === -1 && (startDay.count*startDay.type) > i)){
         continue
       }
-      
-      
 
       if(!!startDay){
         if(startDay.count*startDay.type >= i) {
