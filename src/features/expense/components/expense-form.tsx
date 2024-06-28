@@ -14,7 +14,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Select
+  Select,
 } from "@/components/ui/select";
 
 import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
@@ -38,10 +38,14 @@ export const ExpenseFormSchema = z
     vaultId: z.number(),
     frequencyOfChange: z.nativeEnum(Frequency),
     amountOfChange: z.string().optional(),
-    isPercentageChange: z.boolean().optional()
+    isPercentageChange: z.boolean().optional(),
   })
   .refine((data) => {
-    if (data.frequencyOfChange !== Frequency.NEVER && !data.amountOfChange && data.isPercentageChange === undefined)
+    if (
+      data.frequencyOfChange !== Frequency.NEVER &&
+      !data.amountOfChange &&
+      data.isPercentageChange === undefined
+    )
       return false;
 
     if (
@@ -62,14 +66,14 @@ type Props = {
   defaultValues?: ExpenseFormValues;
   values?: {
     startDay: {
-      count: number
-      type: number
-    }
+      count: number;
+      type: number;
+    };
     duration: {
-      count: number
-      type: number
-    }
-  }
+      count: number;
+      type: number;
+    };
+  };
   onSubmit: (values: Expense) => void;
   onDelete?: () => void;
   disabled?: boolean;
@@ -88,19 +92,29 @@ export default function ExpenseForm({
     defaultValues: defaultValues,
   });
 
-  const {getVault, getExpendableVaults} = useVault()
+  const { getVault, getExpendableVaults } = useVault();
 
-  const [startDurationType, setStartDurationType] = useState(values?.startDay.type ?? 1);
-  const [startDurationCount, setStartDurationCount] = useState(values?.startDay.count ?? 0);
+  const [startDurationType, setStartDurationType] = useState(
+    values?.startDay.type ?? 1
+  );
+  const [startDurationCount, setStartDurationCount] = useState(
+    values?.startDay.count ?? 0
+  );
   const [durationType, setDurationType] = useState(values?.duration.type ?? 1);
-  const [durationCount, setDurationCount] = useState(values?.duration.count ?? 0);
+  const [durationCount, setDurationCount] = useState(
+    values?.duration.count ?? 0
+  );
 
-  const expendableVaults = getExpendableVaults()
+  const expendableVaults = getExpendableVaults();
 
   const handleSubmit = (values: ExpenseFormValues) => {
     const controlledAmountOfChange =
       values.frequencyOfChange !== Frequency.NEVER
-        ? !!values.isPercentageChange ? parseFloat(values.amountOfChange as string) : convertAmountToMiliUnits(parseFloat(values.amountOfChange as string))
+        ? !!values.isPercentageChange
+          ? parseFloat(values.amountOfChange as string)
+          : convertAmountToMiliUnits(
+              parseFloat(values.amountOfChange as string)
+            )
         : undefined;
     const controlledAmount = convertAmountToMiliUnits(
       parseFloat(values.amount)
@@ -110,8 +124,8 @@ export default function ExpenseForm({
       name: values.name,
       frequency: values.frequency,
       vault: getVault(values.vaultId) ?? expendableVaults[0],
-      startDay: {type: startDurationType, count: startDurationCount},
-      duration: {type: durationType, count: durationCount},
+      startDay: { type: startDurationType, count: startDurationCount },
+      duration: { type: durationType, count: durationCount },
       amount: controlledAmount,
       ...(values.frequencyOfChange === Frequency.NEVER
         ? {
@@ -120,7 +134,7 @@ export default function ExpenseForm({
         : {
             frequencyOfChange: values.frequencyOfChange,
             amountOfChange: controlledAmountOfChange as number,
-            isPercentageChange: values.isPercentageChange as boolean
+            isPercentageChange: values.isPercentageChange as boolean,
           }),
     };
 
@@ -212,9 +226,8 @@ export default function ExpenseForm({
           <FormLabel>Start After</FormLabel>
           <div className="flex w-full gap-x-4 items-center">
             <Button
-            
-            className="!w-32 shrink-0"
-            variant={"outline"}
+              className="!w-32 shrink-0"
+              variant={"outline"}
               type="button"
               onClick={() => {
                 setStartDurationCount(0);
@@ -237,7 +250,14 @@ export default function ExpenseForm({
               <SelectTrigger>
                 <SelectValue placeholder="Duration" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent
+                ref={(ref) => {
+                  if (!ref) return;
+                  ref.ontouchstart = (e) => {
+                    e.preventDefault();
+                  };
+                }}
+              >
                 {durationTypes.map((duration) => (
                   <SelectItem
                     key={duration.value}
@@ -254,8 +274,8 @@ export default function ExpenseForm({
           <FormLabel>Duration</FormLabel>
           <div className="flex w-full gap-x-4 items-center">
             <Button
-            className="!w-32 shrink-0"
-            variant={"outline"}
+              className="!w-32 shrink-0"
+              variant={"outline"}
               type="button"
               onClick={() => {
                 setDurationCount(0);
@@ -278,7 +298,14 @@ export default function ExpenseForm({
               <SelectTrigger>
                 <SelectValue placeholder="Duration" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent
+                ref={(ref) => {
+                  if (!ref) return;
+                  ref.ontouchstart = (e) => {
+                    e.preventDefault();
+                  };
+                }}
+              >
                 {durationTypes.map((duration) => (
                   <SelectItem
                     key={duration.value}
@@ -311,7 +338,9 @@ export default function ExpenseForm({
                       text: "Never",
                       value: Frequency.NEVER,
                     },
-                    ...frequencies.filter(f => f.value !== Frequency.ONE_TIME),
+                    ...frequencies.filter(
+                      (f) => f.value !== Frequency.ONE_TIME
+                    ),
                   ].map((frequency) => (
                     <SelectItem key={frequency.value} value={frequency.value}>
                       {frequency.text}
@@ -322,24 +351,28 @@ export default function ExpenseForm({
             </FormItem>
           )}
         />
-        {form.getValues().frequencyOfChange !== Frequency.NEVER && <FormField
-          control={form.control}
-          name="amountOfChange"
-          disabled={form.getValues().frequencyOfChange === Frequency.NEVER}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Amount of Change</FormLabel>
-              <ChangeInput
-                isPercentageChange={form.watch("isPercentageChange") ?? false}
-                setIsPerecentageChange={(value: any) => form.setValue("isPercentageChange", value)}
-                disabled={disabled || field.disabled}
-                placeholder="0.00"
-                value={field.value || ""}
-                onChange={field.onChange}
-              />
-            </FormItem>
-          )}
-        />}
+        {form.getValues().frequencyOfChange !== Frequency.NEVER && (
+          <FormField
+            control={form.control}
+            name="amountOfChange"
+            disabled={form.getValues().frequencyOfChange === Frequency.NEVER}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Amount of Change</FormLabel>
+                <ChangeInput
+                  isPercentageChange={form.watch("isPercentageChange") ?? false}
+                  setIsPerecentageChange={(value: any) =>
+                    form.setValue("isPercentageChange", value)
+                  }
+                  disabled={disabled || field.disabled}
+                  placeholder="0.00"
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                />
+              </FormItem>
+            )}
+          />
+        )}
         <Button
           className="w-full"
           disabled={
