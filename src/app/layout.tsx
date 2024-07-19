@@ -11,6 +11,16 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Meet the Budget",
   description: "Achieve Your Financial Goals with Ease",
+  twitter: {
+    card: "summary_large_image"
+  },
+  openGraph: {
+    title: "Meet the Budget",
+    description: "Achieve Your Financial Goals with Ease",
+    url: "https://meet-the-budget.vercel.app",
+    siteName: "Meet the Budget",
+    type: "website"
+  }
 };
 
 export default function RootLayout({

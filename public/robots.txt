@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://meet-the-budget.vercel.app/sitemap.txt
