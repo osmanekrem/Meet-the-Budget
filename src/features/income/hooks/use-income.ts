@@ -71,7 +71,7 @@ export const useIncome = create<IncomeState>()(
     }),
     {
       name: "income-storage",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

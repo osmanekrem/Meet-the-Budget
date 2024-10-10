@@ -74,7 +74,7 @@ export const useExpense = create<ExpenseState>()(
     }),
     {
       name: "expense-storage",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

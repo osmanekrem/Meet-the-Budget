@@ -75,7 +75,7 @@ export const useTransfer = create<TransferState>()(
     }),
     {
       name: "transfer-storage",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

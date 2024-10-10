@@ -6,6 +6,7 @@ export default function robots(): MetadataRoute.Robots {
             {
                 userAgent: "*",
                 allow: "/",
+                disallow: []
             }
         ],
         sitemap: "https://meet-the-budget.vercel.app/sitemap.xml"

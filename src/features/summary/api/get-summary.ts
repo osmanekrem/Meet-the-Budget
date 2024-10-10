@@ -1,7 +1,7 @@
 import { convertMiliUnitstoAmount, getDaysOfFrequency } from "@/lib/utils";
 import { Expense, Frequency, Income, Transfer, Vault } from "@/types/app-types";
 
-type Data = {
+export type Data = {
   amount: number;
   increase: number;
   afterDays: number;
@@ -61,9 +61,6 @@ const getDataList = (datas: Income[] | Expense[] | Transfer[], daysCount: number
       const changeCount = Math.floor(
         (i-frequencyDays-(startDay.count*startDay.type)) / changeFrequencyDays
       );
-
-      console.log(i, frequencyDays, (startDay.count*startDay.type));
-      
 
       if((frequencyDays === -1 && (startDay.count*startDay.type) > i)){
         continue

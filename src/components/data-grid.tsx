@@ -20,6 +20,9 @@ import { useSearchParams } from "next/navigation";
 import Filters from "./filters";
 import Link from "next/link";
 import { useTransfer } from "@/features/transfer/hooks/use-transfer";
+import { AreaChartComponent } from "./charts/area-chart";
+import IncomeChart from "./charts/income-chart";
+import ExpenseChart from "./charts/expense-chart";
 
 export default function DataGrid() {
   const { getVaults } = useVault();
@@ -203,6 +206,13 @@ export default function DataGrid() {
               {expensesShow ? "Hide expenses" : "Show expenses"}
             </Button>
           </div>
+        </DataCard>
+        <AreaChartComponent data={summary} className="col-span-1" />
+        <DataCard title="Income Chart">
+            <IncomeChart data={summary}/>
+        </DataCard>
+        <DataCard title="Expense Chart">
+            <ExpenseChart data={summary}/>
         </DataCard>
       </div>
     </div>

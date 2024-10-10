@@ -182,7 +182,7 @@ export const useVault = create<VaultState>()(
     }),
     {
       name: "vault-storage",
-      storage: createJSONStorage(() => sessionStorage)
+      storage: createJSONStorage(() => localStorage)
     }
   )
 );
