@@ -1,45 +1,41 @@
 "use client";
 
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Label,
-  ReferenceLine,
-  XAxis,
-  YAxis,
-} from "recharts";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Data, SummaryData } from "@/features/summary/api/get-summary";
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { cn } from "@/lib/utils";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import { cn } from "@/lib/utils";
-import { Data, SummaryData } from "@/features/summary/api/get-summary";
-import { compareAsc, compareDesc, format, getMonth, getYear } from "date-fns";
-
-const chartConfig = {
-  income: {
-    label: "Income",
-    color: "hsl(var(--primary))",
-  },
-  expense: {
-    label: "Expense",
-    color: "hsl(var(--destructive))",
-  },
-} satisfies ChartConfig;
+} from "../ui/chart";
+import {
+  CartesianGrid,
+  Label,
+  Line,
+  LineChart,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { compareAsc, format, getMonth, getYear } from "date-fns";
 
 type Props = {
   className?: string;
   data: SummaryData;
 };
 
+const chartConfig = {
+  financialSituation: {
+    label: "Financial Situation",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig;
+
 function formatAndCombineSummaryData(
   summaryData: SummaryData
-): { date: string; income: number; expense: number }[] {
+): { date: string; financialSituation: number }[] {
   function processDataList(dataList: { data: Data[] }[]): {
     [key: string]: number;
   } {
@@ -66,33 +62,38 @@ function formatAndCombineSummaryData(
   const incomeData = processDataList(summaryData.incomeList);
   const expenseData = processDataList(summaryData.expenseList);
 
-  const allDays = new Set(
-    [...Object.keys(incomeData), ...Object.keys(expenseData)].map(String)
-  );
+  const allDays = Array.from(
+    new Set(
+      [...Object.keys(incomeData), ...Object.keys(expenseData)].map(String)
+    )
+  ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
-  return Array.from(allDays)
-    .map((date) => ({
+  let cumulativeIncome = 0;
+  let cumulativeExpense = 0;
+
+  return allDays.map((date) => {
+    cumulativeIncome += incomeData[date] || 0;
+    cumulativeExpense += expenseData[date] || 0;
+    return {
       date: format(new Date(date), "MMM yy"),
-      dateObj: new Date(date),
-      income: incomeData[date] || 0,
-      expense: expenseData[date] || 0,
-    }))
-    .sort((a, b) => compareAsc(a.dateObj, b.dateObj));
+      financialSituation: cumulativeIncome - cumulativeExpense,
+    };
+  });
 }
 
-export function AreaChartComponent({ className, data }: Props) {
+const FinancialSituationChart = ({ className, data }: Props) => {
   const chartData = formatAndCombineSummaryData(data);
-
   return (
     <Card className={cn(className, "text-left")}>
       <CardHeader>
         <CardTitle className="text-xl line-clamp-1">
-          Income - Expense Chart
+          Financial Situation
         </CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <AreaChart
+          <LineChart
+            accessibilityLayer
             data={chartData}
             margin={{
               left: 12,
@@ -100,40 +101,34 @@ export function AreaChartComponent({ className, data }: Props) {
             }}
           >
             <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => value.toLocaleString()}
             />
-
+            <XAxis
+              dataKey="date"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+            />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator="dot" />}
             />
-            <Area
-              dataKey="income"
+            <Line
+              dataKey="financialSituation"
               type="linear"
-              fill="var(--color-income)"
-              fillOpacity={0.4}
-              stroke="var(--color-income)"
+              stroke="hsl(var(--muted-foreground))"
+              strokeWidth={2}
+              dot={false}
             />
-            <Area
-              dataKey="expense"
-              type="linear"
-              fill="var(--color-expense)"
-              fillOpacity={0.4}
-              stroke="var(--color-expense)"
-            />
-          </AreaChart>
+          </LineChart>
         </ChartContainer>
       </CardContent>
     </Card>
   );
-}
+};
+
+export default FinancialSituationChart;

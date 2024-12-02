@@ -28,7 +28,6 @@ export default function EditExpenseSheet() {
   if (!id) return null;
 
   const expense = getExpense(id);
-  const expenseWithValues = getExpenseWithValues(id);
 
   const defaultValues: ExpenseFormValues = !!expense
     ? expense
@@ -70,10 +69,6 @@ export default function EditExpenseSheet() {
             onSubmit={handleSubmit}
             onDelete={handleDelete}
             defaultValues={defaultValues}
-            values={!!expenseWithValues?.startDay || !!expenseWithValues?.duration ? {
-              startDay: expenseWithValues.startDay,
-              duration: expenseWithValues.duration
-            } : undefined}
           />
         </SheetContent>
       </Sheet>

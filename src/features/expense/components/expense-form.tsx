@@ -17,7 +17,7 @@ import {
   Select,
 } from "@/components/ui/select";
 
-import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 
 import { frequencies } from "@/constants/frequencies";
 import CurrencyInput from "@/components/currency-input";
@@ -29,6 +29,7 @@ import { useVault } from "@/features/vault/hooks/use-vault";
 import ChangeInput from "@/components/change-input";
 import { durationTypes } from "@/constants/durations";
 import { useState } from "react";
+import DatePicker from "@/components/ui/date-picker";
 
 export const ExpenseFormSchema = z
   .object({
@@ -39,6 +40,9 @@ export const ExpenseFormSchema = z
     frequencyOfChange: z.nativeEnum(Frequency),
     amountOfChange: z.string().optional(),
     isPercentageChange: z.boolean().optional(),
+    startDate: z.date().optional(),
+    finishDate: z.date().optional(),
+    firstChangeDate: z.date().optional(),
   })
   .refine((data) => {
     if (
@@ -64,16 +68,6 @@ export type ExpenseFormValues = z.infer<typeof ExpenseFormSchema>;
 type Props = {
   id?: number;
   defaultValues?: ExpenseFormValues;
-  values?: {
-    startDay: {
-      count: number;
-      type: number;
-    };
-    duration: {
-      count: number;
-      type: number;
-    };
-  };
   onSubmit: (values: Expense) => void;
   onDelete?: () => void;
   disabled?: boolean;
@@ -82,7 +76,6 @@ type Props = {
 export default function ExpenseForm({
   id,
   defaultValues,
-  values,
   onSubmit,
   onDelete,
   disabled,
@@ -93,17 +86,6 @@ export default function ExpenseForm({
   });
 
   const { getVault, getExpendableVaults } = useVault();
-
-  const [startDurationType, setStartDurationType] = useState(
-    values?.startDay.type ?? 1
-  );
-  const [startDurationCount, setStartDurationCount] = useState(
-    values?.startDay.count ?? 0
-  );
-  const [durationType, setDurationType] = useState(values?.duration.type ?? 1);
-  const [durationCount, setDurationCount] = useState(
-    values?.duration.count ?? 0
-  );
 
   const expendableVaults = getExpendableVaults();
 
@@ -124,8 +106,8 @@ export default function ExpenseForm({
       name: values.name,
       frequency: values.frequency,
       vault: getVault(values.vaultId) ?? expendableVaults[0],
-      startDay: { type: startDurationType, count: startDurationCount },
-      duration: { type: durationType, count: durationCount },
+      startDate: values.startDate,
+      finishDate: values.finishDate,
       amount: controlledAmount,
       ...(values.frequencyOfChange === Frequency.NEVER
         ? {
@@ -133,6 +115,7 @@ export default function ExpenseForm({
           }
         : {
             frequencyOfChange: values.frequencyOfChange,
+            firstChangeDate: values.firstChangeDate,
             amountOfChange: controlledAmountOfChange as number,
             isPercentageChange: values.isPercentageChange as boolean,
           }),
@@ -222,102 +205,36 @@ export default function ExpenseForm({
             </FormItem>
           )}
         />
-        <div className="flex flex-col gap-y-4 items-start">
-          <FormLabel>Start After</FormLabel>
-          <div className="flex w-full gap-x-4 items-center">
-            <Button
-              className="!w-32 shrink-0"
-              variant={"outline"}
-              type="button"
-              onClick={() => {
-                setStartDurationCount(0);
-                setStartDurationType(1);
-              }}
-            >
-              Now (0 days)
-            </Button>
-            <Input
-              value={startDurationCount}
-              type="number"
-              pattern="[0-9]"
-              min={0}
-              onChange={(e) => setStartDurationCount(+e.target.value)}
-            />
-            <Select
-              onValueChange={(e) => setStartDurationType(+e)}
-              value={startDurationType.toString()}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Duration" />
-              </SelectTrigger>
-              <SelectContent
-                ref={(ref) => {
-                  if (!ref) return;
-                  ref.ontouchstart = (e) => {
-                    e.preventDefault();
-                  };
-                }}
-              >
-                {durationTypes.map((duration) => (
-                  <SelectItem
-                    key={duration.value}
-                    value={duration.value.toString()}
-                  >
-                    {duration.text}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="flex flex-col gap-y-4 items-start">
-          <FormLabel>Duration</FormLabel>
-          <div className="flex w-full gap-x-4 items-center">
-            <Button
-              className="!w-32 shrink-0"
-              variant={"outline"}
-              type="button"
-              onClick={() => {
-                setDurationCount(0);
-                setDurationType(1);
-              }}
-            >
-              Endless (0 days)
-            </Button>
-            <Input
-              value={durationCount}
-              type="number"
-              pattern="[0-9]"
-              min={0}
-              onChange={(e) => setDurationCount(+e.target.value)}
-            />
-            <Select
-              onValueChange={(e) => setDurationType(+e)}
-              value={durationType.toString()}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Duration" />
-              </SelectTrigger>
-              <SelectContent
-                ref={(ref) => {
-                  if (!ref) return;
-                  ref.ontouchstart = (e) => {
-                    e.preventDefault();
-                  };
-                }}
-              >
-                {durationTypes.map((duration) => (
-                  <SelectItem
-                    key={duration.value}
-                    value={duration.value.toString()}
-                  >
-                    {duration.text}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <FormField
+          control={form.control}
+          name="startDate"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Start Date</FormLabel>
+              <FormControl>
+                <DatePicker
+                  value={field.value}
+                  onChange={(date) => field.onChange(date)}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="finishDate"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Finish Date</FormLabel>
+              <FormControl>
+                <DatePicker
+                  value={field.value}
+                  onChange={(date) => field.onChange(date)}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="frequencyOfChange"
@@ -351,6 +268,23 @@ export default function ExpenseForm({
             </FormItem>
           )}
         />
+        {form.getValues().frequencyOfChange !== Frequency.NEVER && (
+          <FormField
+            control={form.control}
+            name="firstChangeDate"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>First Change Date</FormLabel>
+                <FormControl>
+                  <DatePicker
+                    value={field.value}
+                    onChange={(date) => field.onChange(date)}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        )}
         {form.getValues().frequencyOfChange !== Frequency.NEVER && (
           <FormField
             control={form.control}

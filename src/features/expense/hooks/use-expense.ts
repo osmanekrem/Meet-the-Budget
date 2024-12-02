@@ -25,6 +25,8 @@ export const useExpense = create<ExpenseState>()(
               name: expense.name,
               frequency: expense.frequency,
               vaultId: expense.vault.id,
+              startDate: expense.startDate,
+              finishDate: expense.finishDate,
               amount: convertMiliUnitstoAmount(expense.amount).toString(),
               ...(expense.frequencyOfChange === Frequency.NEVER
                 ? {
@@ -37,7 +39,7 @@ export const useExpense = create<ExpenseState>()(
                       : convertMiliUnitstoAmount(
                           expense.amountOfChange
                         ).toString(),
-                        
+                        firstChangeDate: expense.firstChangeDate,
                     isPercentageChange: expense.isPercentageChange,
                   }),
             }

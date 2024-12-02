@@ -27,8 +27,8 @@ export const useTransfer = create<TransferState>()(
               frequency: transfer.frequency,
               fromVaultId: transfer.from.id,
               toVaultId: transfer.to.id,
-              startDay: transfer.startDay,
-              duration: transfer.duration,
+              startDate: transfer.startDate,
+              finishDate: transfer.finishDate,
               amount: convertMiliUnitstoAmount(transfer.amount).toString(),
               ...(transfer.frequencyOfChange === Frequency.NEVER
                 ? {
@@ -41,6 +41,7 @@ export const useTransfer = create<TransferState>()(
                       : convertMiliUnitstoAmount(
                           transfer.amountOfChange
                         ).toString(),
+                      firstChangeDate: transfer.firstChangeDate,
                     isPercentageChange: transfer.isPercentageChange,
                   }),
             }

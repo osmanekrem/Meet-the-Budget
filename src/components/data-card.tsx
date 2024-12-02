@@ -10,12 +10,12 @@ import {
 type Props = {
   title: string;
   subTitle?: string;
-  children: ReactNode
+  children: ReactNode;
 };
 
 export default function DataCard({ title, subTitle, children }: Props) {
   return (
-    <Card className="text-left">
+    <Card className="text-left col-span-2">
       <CardHeader>
         <CardTitle className="text-xl line-clamp-1">{title}</CardTitle>
         <CardDescription>{subTitle}</CardDescription>

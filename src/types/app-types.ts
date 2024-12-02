@@ -16,22 +16,18 @@ export type Income = {
     name: string
     frequency: Frequency
     amount: number
-    startDay: {
-        count: number
-        type: number
-    }
-    duration: {
-        count: number
-        type: number
-    }
+    startDate?: Date
+    finishDate?: Date
     vault: Vault
 } & (
     {
         frequencyOfChange: Frequency.NEVER
         amountOfChange?: undefined
         isPercentageChange?: undefined
+        firstChangeDate?: undefined
     } | {
         frequencyOfChange: Exclude<Frequency, Frequency.NEVER>
+        firstChangeDate?: Date
         amountOfChange: number
         isPercentageChange: boolean
     }
@@ -41,22 +37,18 @@ export type Expense = {
     name: string
     frequency: Frequency
     amount: number
-    startDay: {
-        count: number
-        type: number
-    }
-    duration: {
-        count: number
-        type: number
-    }
+    startDate?: Date
+    finishDate?: Date
     vault: Vault
 } & (
     {
         frequencyOfChange: Frequency.NEVER
         amountOfChange?: undefined
         isPercentageChange?: undefined
+        firstChangeDate?: undefined
     } | {
         frequencyOfChange: Exclude<Frequency, Frequency.NEVER>
+        firstChangeDate?: Date
         amountOfChange: number
         isPercentageChange: boolean
     }
@@ -81,14 +73,8 @@ export type CreateTransfer = {
     name: string
     from: Vault
     to: Vault
-    startDay: {
-        count: number
-        type: number
-    }
-    duration: {
-        count: number
-        type: number
-    }
+    startDate?: Date
+    finishDate?: Date
     amount: number
     frequency: Frequency
 } & (
@@ -96,8 +82,10 @@ export type CreateTransfer = {
         frequencyOfChange: Frequency.NEVER
         amountOfChange?: undefined
         isPercentageChange?: undefined
+        firstChangeDate?: undefined
     } | {
         frequencyOfChange: Exclude<Frequency, Frequency.NEVER>
+        firstChangeDate?: Date
         amountOfChange: number
         isPercentageChange: boolean
     }
@@ -107,14 +95,8 @@ export type Transfer = {
     name: string
     from: Vault
     to: Vault
-    startDay: {
-        count: number
-        type: number
-    }
-    duration: {
-        count: number
-        type: number
-    }
+    startDate?: Date
+    finishDate?: Date
     amount: number
     frequency: Frequency
 } & (
@@ -122,8 +104,10 @@ export type Transfer = {
         frequencyOfChange: Frequency.NEVER
         amountOfChange?: undefined
         isPercentageChange?: undefined
+        firstChangeDate?: undefined
     } | {
         frequencyOfChange: Exclude<Frequency, Frequency.NEVER>
+        firstChangeDate?: Date
         amountOfChange: number
         isPercentageChange: boolean
     }

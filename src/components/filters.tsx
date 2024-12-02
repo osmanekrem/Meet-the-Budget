@@ -9,6 +9,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import qs from "query-string";
 import { useVault } from '@/features/vault/hooks/use-vault';
 import { durationTypes } from '@/constants/durations';
+import DatePicker from './ui/date-picker';
 
 type Props = {}
 
@@ -36,18 +37,14 @@ export default function Filters({}: Props) {
     const router = useRouter()
 
     const {vaults} = useVault()
-
-    const [durationType, setDurationType] = useState(params.get("durationType") || "1")
-    const [durationCount, setDurationCount] = useState(params.get("durationCount") || "1")
+    const ed = params.get("endDate")
+    const [endDate, setEndDate] = useState(ed ? new Date(ed) : undefined)
     const [vaultId, setVaultId] = useState(params.get("vaultId") || "all")
 
-    const debouncedDurationCount= useDebouncedValue(durationCount)
-    const debouncedDurationType = useDebouncedValue(durationType)
 
-    const pushToUrl = useCallback((durationType:string, durationCount: string, vaultId: string) => {
+    const pushToUrl = useCallback((endDate: Date | undefined, vaultId: string) => {
         const query = {
-            durationType,
-            durationCount,
+            endDate: endDate?.toString(),
             vaultId: vaultId
         }
 
@@ -60,28 +57,12 @@ export default function Filters({}: Props) {
     }, [pathname, router])
 
     useEffect(() => {
-        pushToUrl(debouncedDurationType, debouncedDurationCount, vaultId)
-    }, [debouncedDurationType, debouncedDurationCount, vaultId, pushToUrl])
+        pushToUrl(endDate, vaultId)
+    }, [endDate, vaultId, pushToUrl])
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-8 gap-y-4">
-        <Input value={durationCount} type="number" pattern="[0-9]" min={0} onChange={e => setDurationCount(e.target.value)} />
-        <Select
-                onValueChange={e => setDurationType(e)}
-                defaultValue={"1"}
-                value={durationType}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Duration" />
-                </SelectTrigger>
-                <SelectContent>
-                  {durationTypes.map((duration) => (
-                    <SelectItem key={duration.value} value={duration.value.toString()}>
-                      {duration.text}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+        <DatePicker onChange={e => setEndDate(e)} value={endDate} />
         <Select
                 onValueChange={e => setVaultId(e)}
                 defaultValue={"all"}

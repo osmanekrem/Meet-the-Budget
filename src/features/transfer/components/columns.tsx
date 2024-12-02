@@ -7,6 +7,7 @@ import { Transfer } from "@/types/app-types";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import Actions from "./actions";
+import { format } from "date-fns";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -74,6 +75,16 @@ export const columns: ColumnDef<Transfer>[] = [
     accessorKey: "to",
     header: "To",
     cell: ({row}) => row.original.to.name
+  },
+  {
+    accessorKey: "startDate",
+    header: "Start Date",
+    cell: ({row}) => format(row.original.startDate ?? new Date(), "dd/MM/yyyy")
+  },
+  {
+    accessorKey: "finishDate",
+    header: "Finish Date",
+    cell: ({row}) => row.original.finishDate ? format(row.original.finishDate, "dd/MM/yyyy") : "-"
   },
   {
     accessorKey: "frequencyOfChange",

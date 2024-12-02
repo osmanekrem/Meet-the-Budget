@@ -1,7 +1,6 @@
 import { DollarSignIcon, PercentIcon } from "lucide-react";
 import CurrencyInput from "./currency-input";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 
 type Props = {
   value: string;

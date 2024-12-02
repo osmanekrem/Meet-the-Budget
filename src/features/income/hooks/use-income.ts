@@ -25,6 +25,8 @@ export const useIncome = create<IncomeState>()(
               name: income.name,
               frequency: income.frequency,
               vaultId: income.vault.id,
+              startDate: income.startDate,
+              finishDate: income.finishDate,
               amount: convertMiliUnitstoAmount(income.amount).toString(),
               ...(income.frequencyOfChange === Frequency.NEVER
                 ? {
@@ -37,6 +39,7 @@ export const useIncome = create<IncomeState>()(
                       : convertMiliUnitstoAmount(
                           income.amountOfChange
                         ).toString(),
+                    firstChangeDate: income.firstChangeDate,
                     isPercentageChange: income.isPercentageChange,
                   }),
             }

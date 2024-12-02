@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={cn(inter.className, "antialiased min-h-screen font-sans")}
+        className={cn(inter.className, "antialiased min-h-screen relative font-sans")}
       >
         <SheetProvider />
         <Navbar />

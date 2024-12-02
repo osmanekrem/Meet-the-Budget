@@ -26,7 +26,6 @@ export default function EditIncomeSheet() {
   if (!id) return null;
 
   const income = getIncome(id);
-  const incomeWithValues = getIncomeWithValues(id);
 
   const defaultValues: IncomeFormValues = !!income
     ? income
@@ -68,10 +67,6 @@ export default function EditIncomeSheet() {
             onSubmit={handleSubmit}
             onDelete={handleDelete}
             defaultValues={defaultValues}
-            values={!!incomeWithValues?.startDay || !!incomeWithValues?.duration ? {
-              startDay: incomeWithValues.startDay,
-              duration: incomeWithValues.duration
-            } : undefined}
           />
         </SheetContent>
       </Sheet>

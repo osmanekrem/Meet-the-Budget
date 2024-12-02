@@ -5,7 +5,7 @@ import { buttonVariants } from "./ui/button"
 
 const Navbar = () => {    
   return (
-    <nav className="sticky z-[100] top-0 h-14 inset-x-0 w-full border-b border-gray-200 bg-white/75 backdrop-blur-lg transition-all">
+    <nav className="sticky z-10 top-0 h-14 inset-x-0 w-full border-b border-gray-200 bg-white/75 backdrop-blur-lg transition-all">
         <MaxWidthWrapper>
             <div className="flex h-14 justify-between items-center">
                 <Link href="/"><span className="font-bold text-xl md:text-3xl tracking-tighter whitespace-nowrap flex-nowrap">Meet<span className="font-medium text-base md:text-lg">the</span>Budget</span></Link>

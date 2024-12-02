@@ -23,21 +23,19 @@ import { useTransfer } from "@/features/transfer/hooks/use-transfer";
 import { AreaChartComponent } from "./charts/area-chart";
 import IncomeChart from "./charts/income-chart";
 import ExpenseChart from "./charts/expense-chart";
+import { format, toDate } from "date-fns";
+import FinancialSituationChart from "./charts/financial-situation-chart";
 
 export default function DataGrid() {
   const { getVaults } = useVault();
-  const {transfers: transfersData} = useTransfer()
+  const { transfers: transfersData } = useTransfer();
 
   const params = useSearchParams();
 
-  const durationType = useMemo(
-    () => parseInt(params.get("durationType") || "1", 10),
-    [params]
-  );
-  const durationCount = useMemo(
-    () => parseInt(params.get("durationCount") || "0", 10),
-    [params]
-  );
+  const endDate = useMemo(() => {
+    const endDate = params.get("endDate");
+    return !!endDate ? new Date(endDate) : new Date();
+  }, [params]);
   const vaultId = useMemo(() => params.get("vaultId") || "all", [params]);
 
   const vaultIdProcessed = useMemo(
@@ -45,7 +43,10 @@ export default function DataGrid() {
     [vaultId]
   );
 
-  const transfers = useMemo(() => vaultId === "all" ? [] : transfersData,[vaultId, transfersData])
+  const transfers = useMemo(
+    () => (vaultId === "all" ? [] : transfersData),
+    [vaultId, transfersData]
+  );
 
   const [incomesShow, setIncomesShow] = useState(false);
   const [expensesShow, setExpensesShow] = useState(false);
@@ -58,18 +59,18 @@ export default function DataGrid() {
 
   useEffect(() => {
     const fetchSummary = () => {
-      const result = getSummaryByDate(vaults, durationType * durationCount, transfers);
+      const result = getSummaryByDate(vaults, endDate, transfers);
       setSummary(result);
     };
     fetchSummary();
-  }, [vaults, durationType, durationCount, transfers]);
+  }, [vaults, endDate, transfers]);
 
   if (!summary) return null;
 
   return (
     <div className="flex flex-col gap-y-4">
       <Filters />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-2 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-8 pb-2 mb-8">
         <DataCard title="Remaining">
           <p className="text-3xl font-bold">
             {formatCurrency(summary.remaining)}
@@ -78,58 +79,70 @@ export default function DataGrid() {
         <DataCard title="Incomes">
           <div className="flex flex-col gap-1.5">
             <div className="flex gap-x-2 items-end justify-between border-b pb-4">
-              <span className="text-sm lg:text-base text-muted-foreground">Total Incomes</span>
+              <span className="text-sm lg:text-base text-muted-foreground">
+                Total Incomes
+              </span>
               <span className="font-bold text-2xl lg:text-3xl truncate">
                 {formatCurrency(summary.totalIncome)}
               </span>
             </div>
-            {incomesShow && (summary.incomeList.length ? (
-              <Accordion type="multiple" className="w-full">
-                {summary.incomeList.map((income, i) => (
-                  <AccordionItem key={i} value={i.toString()}>
-                    <AccordionTrigger>
-                      <div className="flex flex-1 pr-2.5 justify-between items-center">
-                        <span className="text-sm text-muted-foreground">
-                          {income.name}
-                        </span>
-                        <span className="font-bold text-lg lg:text-xl">
-                          {formatCurrency(income.totalAmount)}
-                        </span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="flex flex-col gap-0.5">
-                        {income.data.map((d, i) => (
-                          <p
-                            key={i}
-                            className="flex justify-between items-center gap-x-1.5"
-                          >
-                            <span> {d.afterDays}</span>
-                            <span className="font-medium text-lg flex items-center gap-x-1.5">
-                              {formatCurrency(d.amount)}{" "}
-                              {d.increase !== 0 && (
-                                <StatusBadge
-                                  change={d.increase}
-                                  isPercentage={!!income.isPercentage}
-                                />
-                              )}
-                            </span>
-                          </p>
-                        ))}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            ) : (
-              <div className="flex items-center justify-center p-2 py-8 border-b">
-                <p className="flex flex-col gap-1.5 items-center">
-                You don&apos;t have any income yet. 
-                <Link href="/save/incomes" className={buttonVariants({size: "sm"})} >Add income</Link>
-                </p>
-                
-              </div>
-            ))}
+            {incomesShow &&
+              (summary.incomeList.length ? (
+                <Accordion type="multiple" className="w-full">
+                  {summary.incomeList.map((income, i) => (
+                    <AccordionItem key={i} value={i.toString()}>
+                      <AccordionTrigger>
+                        <div className="flex flex-1 pr-2.5 justify-between items-center">
+                          <span className="text-sm text-muted-foreground">
+                            {income.name}
+                          </span>
+                          <span className="font-bold text-lg lg:text-xl">
+                            {formatCurrency(income.totalAmount)}
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex flex-col gap-0.5">
+                          {income.data.map((d, i) => (
+                            <p
+                              key={i}
+                              className="flex justify-between items-center gap-x-1.5"
+                            >
+                              <span>
+                                {" "}
+                                {d.afterDays}&nbsp;
+                                {format(d.date, "dd/MM/yyyy")}
+                              </span>
+
+                              <span className="font-medium text-lg flex items-center gap-x-1.5">
+                                {formatCurrency(d.amount)}{" "}
+                                {d.increase !== 0 && (
+                                  <StatusBadge
+                                    change={d.increase}
+                                    isPercentage={!!income.isPercentage}
+                                  />
+                                )}
+                              </span>
+                            </p>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              ) : (
+                <div className="flex items-center justify-center p-2 py-8 border-b">
+                  <p className="flex flex-col gap-1.5 items-center">
+                    You don&apos;t have any income yet.
+                    <Link
+                      href="/save/incomes"
+                      className={buttonVariants({ size: "sm" })}
+                    >
+                      Add income
+                    </Link>
+                  </p>
+                </div>
+              ))}
             <Button
               variant={"ghost"}
               className="text-primary-foreground"
@@ -143,60 +156,69 @@ export default function DataGrid() {
         <DataCard title="Expenses">
           <div className="flex flex-col gap-1.5">
             <div className="flex gap-x-2 items-end justify-between border-b pb-4">
-              <span className="text-sm lg:text-base text-muted-foreground">Total Expenses</span>
+              <span className="text-sm lg:text-base text-muted-foreground">
+                Total Expenses
+              </span>
               <span className="font-bold text-2xl lg:text-3xl truncate">
                 {formatCurrency(summary.totalExpense)}
               </span>
             </div>
-            {expensesShow && (
-              summary.expenseList.length ? (
-              <Accordion type="multiple" className="w-full">
-                {summary.expenseList.map((expense, i) => (
-                  <AccordionItem key={i} value={i.toString()}>
-                    <AccordionTrigger>
-                      <div className="flex flex-1 pr-2.5 justify-between items-center">
-                        <span className="text-sm text-muted-foreground">
-                          {expense.name}
-                        </span>
-                        <span className="font-bold text-lg lg:text-xl">
-                          {formatCurrency(expense.totalAmount)}
-                        </span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="flex flex-col gap-0.5">
-                        {expense.data.map((d, i) => (
-                          <p
-                            key={i}
-                            className="flex justify-between items-center gap-x-1.5"
-                          >
-                            <span> {d.afterDays}</span>
-                            <span className="font-medium text-lg flex items-center gap-x-1.5">
-                              {formatCurrency(d.amount)}{" "}
-                              {d.increase !== 0 && (
-                                <StatusBadge
-                                  change={d.increase}
-                                  isPercentage={!!expense.isPercentage}
-                                />
-                              )}
-                            </span>
-                          </p>
-                        ))}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-              )  : (
+            {expensesShow &&
+              (summary.expenseList.length ? (
+                <Accordion type="multiple" className="w-full">
+                  {summary.expenseList.map((expense, i) => (
+                    <AccordionItem key={i} value={i.toString()}>
+                      <AccordionTrigger>
+                        <div className="flex flex-1 pr-2.5 justify-between items-center">
+                          <span className="text-sm text-muted-foreground">
+                            {expense.name}
+                          </span>
+                          <span className="font-bold text-lg lg:text-xl">
+                            {formatCurrency(expense.totalAmount)}
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex flex-col gap-0.5">
+                          {expense.data.map((d, i) => (
+                            <p
+                              key={i}
+                              className="flex justify-between items-center gap-x-1.5"
+                            >
+                              <span>
+                                {" "}
+                                {d.afterDays}&nbsp;
+                                {format(d.date, "dd/MM/yyyy")}
+                              </span>
+                              <span className="font-medium text-lg flex items-center gap-x-1.5">
+                                {formatCurrency(d.amount)}{" "}
+                                {d.increase !== 0 && (
+                                  <StatusBadge
+                                    change={d.increase}
+                                    isPercentage={!!expense.isPercentage}
+                                  />
+                                )}
+                              </span>
+                            </p>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              ) : (
                 <div className="flex items-center justify-center p-2 py-8 border-b">
                   <p className="flex flex-col gap-1.5 items-center">
-                  You don&apos;t have any expense yet. 
-                  <Link href="/save/expenses" className={buttonVariants({size: "sm"})} >Add expense</Link>
+                    You don&apos;t have any expense yet.
+                    <Link
+                      href="/save/expenses"
+                      className={buttonVariants({ size: "sm" })}
+                    >
+                      Add expense
+                    </Link>
                   </p>
-                  
                 </div>
-              )
-            )}
+              ))}
             <Button
               variant={"ghost"}
               className="text-primary-foreground"
@@ -207,12 +229,19 @@ export default function DataGrid() {
             </Button>
           </div>
         </DataCard>
-        <AreaChartComponent data={summary} className="col-span-1" />
+        <AreaChartComponent
+          data={summary}
+          className="col-span-full lg:col-span-3"
+        />
+        <FinancialSituationChart
+          data={summary}
+          className="col-span-full lg:col-span-3"
+        />
         <DataCard title="Income Chart">
-            <IncomeChart data={summary}/>
+          <IncomeChart data={summary} />
         </DataCard>
         <DataCard title="Expense Chart">
-            <ExpenseChart data={summary}/>
+          <ExpenseChart data={summary} />
         </DataCard>
       </div>
     </div>

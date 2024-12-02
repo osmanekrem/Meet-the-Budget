@@ -15,7 +15,7 @@ import { useOpenTransfer } from "../hooks/use-open-transfer";
 export default function EditTransferSheet() {
   const { id, isOpen, onClose } = useOpenTransfer();
 
-  const { getTransfer, getTransferWithValues, editTransfer, removeTransfer } = useTransfer();
+  const { getTransfer, editTransfer, removeTransfer } = useTransfer();
   const {getExpendableVaults} = useVault()
 
   const [ConfirmDialog, confirm] = useConfirm(
@@ -26,7 +26,6 @@ export default function EditTransferSheet() {
   if (!id) return null;
 
   const transfer = getTransfer(id);
-  const transferWithValues = getTransferWithValues(id);
   const expendableVaults = getExpendableVaults()
 
   // if(vaults.length < 2 || expendableVaults.length < 1) return null
@@ -70,10 +69,6 @@ export default function EditTransferSheet() {
             onSubmit={handleSubmit}
             onDelete={handleDelete}
             defaultValues={defaultValues}
-            values={!!transferWithValues?.startDay && !!transferWithValues?.duration ? {
-              startDay: transferWithValues.startDay,
-              duration: transferWithValues.duration
-            } : undefined}
           />
         </SheetContent>
       </Sheet>
